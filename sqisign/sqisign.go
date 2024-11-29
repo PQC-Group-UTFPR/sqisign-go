@@ -33,7 +33,7 @@ func Keypair() ([]byte, []byte, error) {
     return pk, sk, nil
 }
 
-// Sign signs the message `m` with the secret key `sk` and returns the signed message.
+// Sign signs the hashed message `m` with the secret key `sk` and returns the signed message.
 func Sign(m []byte, sk []byte) ([]byte, error) {
     sm := make([]byte, len(m)+SignatureBytes) // Buffer for signature + message
     smlen := C.ulonglong(0)
