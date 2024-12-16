@@ -12,7 +12,7 @@ cmake -DSQISIGN_BUILD_TYPE=ref ENABLE_TESTS=OFF ENABLE_GMP_BUILD=ON ..
 In the [sqisign.go](src/sqisign/sqisign.go) replace the `<absolute_path_sqisign>` with the correct absolute path to the SQISign C repository, e.g., `/home/user/git/the-sqisign`
 
 Then, to build the executable we need two steps.
-First, select the desired security level, i.e., 1, 3 or 5. To do that, change the line:
+First, select the desired security level, i.e., `1`, `3` or `5`. To do that, change the line:
 ```C
 #define SECURITY_LEVEL 3
 ```
