@@ -9,67 +9,56 @@ import (
 )
 
 /*
-#cgo CFLAGS: -I <absolute_path_sqisign>/
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/protocols/ref/lvl1
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/gf/ref/lvl1
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/id2iso/ref/lvl1
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/ec/ref/lvl1
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/klpt/ref/lvl1
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/precomp/ref/lvl1
+#cgo LDFLAGS: -L /usr/local/lib/sqisign
 
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/protocols/ref/lvl3
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/gf/ref/lvl3
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/id2iso/ref/lvl3
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/ec/ref/lvl3
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/klpt/ref/lvl3
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/precomp/ref/lvl3
+#cgo lvl1 CFLAGS: -DSECURITY_LEVEL=1
+#cgo lvl1 LDFLAGS: -l:libsqisign_lvl1_nistapi.a
+#cgo lvl1 LDFLAGS: -l:libsqisign_lvl1.a
+#cgo lvl1 LDFLAGS: -l:libsqisign_protocols_lvl1.a
+#cgo lvl1 LDFLAGS: -l:libsqisign_gf_lvl1.a
+#cgo lvl1 LDFLAGS: -l:libsqisign_id2iso_lvl1.a
+#cgo lvl1 LDFLAGS: -l:libsqisign_ec_lvl1.a
+#cgo lvl1 LDFLAGS: -l:libsqisign_klpt_lvl1.a
+#cgo lvl1 LDFLAGS: -l:libsqisign_precomp_lvl1.a
 
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/protocols/ref/lvl5
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/gf/ref/lvl5
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/id2iso/ref/lvl5
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/ec/ref/lvl5
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/klpt/ref/lvl5
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/precomp/ref/lvl5
+#cgo lvl3 CFLAGS: -DSECURITY_LEVEL=3
+#cgo lvl3 LDFLAGS: -l:libsqisign_lvl3_nistapi.a
+#cgo lvl3 LDFLAGS: -l:libsqisign_lvl3.a
+#cgo lvl3 LDFLAGS: -l:libsqisign_protocols_lvl3.a
+#cgo lvl3 LDFLAGS: -l:libsqisign_gf_lvl3.a
+#cgo lvl3 LDFLAGS: -l:libsqisign_id2iso_lvl3.a
+#cgo lvl3 LDFLAGS: -l:libsqisign_ec_lvl3.a
+#cgo lvl3 LDFLAGS: -l:libsqisign_klpt_lvl3.a
+#cgo lvl3 LDFLAGS: -l:libsqisign_precomp_lvl3.a
 
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/quaternion/ref/generic
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/common/generic
-#cgo LDFLAGS: -L<absolute_path_sqisign>/build/src/intbig/ref/generic
+#cgo lvl5 CFLAGS: -DSECURITY_LEVEL=5
+#cgo lvl5 LDFLAGS: -l:libsqisign_lvl5_nistapi.a
+#cgo lvl5 LDFLAGS: -l:libsqisign_lvl5.a
+#cgo lvl5 LDFLAGS: -l:libsqisign_protocols_lvl5.a
+#cgo lvl5 LDFLAGS: -l:libsqisign_gf_lvl5.a
+#cgo lvl5 LDFLAGS: -l:libsqisign_id2iso_lvl5.a
+#cgo lvl5 LDFLAGS: -l:libsqisign_ec_lvl5.a
+#cgo lvl5 LDFLAGS: -l:libsqisign_klpt_lvl5.a
+#cgo lvl5 LDFLAGS: -l:libsqisign_precomp_lvl5.a
 
-
-#cgo lvl1 LDFLAGS: -lsqisign_lvl1_nistapi -lsqisign_lvl1 -lsqisign_protocols_lvl1
-#cgo lvl1 LDFLAGS: -lsqisign_gf_lvl1 -lsqisign_id2iso_lvl1 -lsqisign_ec_lvl1
-#cgo lvl1 LDFLAGS: -lsqisign_klpt_lvl1 -lsqisign_precomp_lvl1
-
-#cgo lvl3 LDFLAGS: -lsqisign_lvl3_nistapi -lsqisign_lvl3 -lsqisign_protocols_lvl3
-#cgo lvl3 LDFLAGS: -lsqisign_gf_lvl3 -lsqisign_id2iso_lvl3 -lsqisign_ec_lvl3
-#cgo lvl3 LDFLAGS: -lsqisign_klpt_lvl3 -lsqisign_precomp_lvl3
-
-#cgo lvl5 LDFLAGS: -lsqisign_lvl5_nistapi -lsqisign_lvl5 -lsqisign_protocols_lvl5
-#cgo lvl5 LDFLAGS: -lsqisign_gf_lvl5 -lsqisign_id2iso_lvl5 -lsqisign_ec_lvl5
-#cgo lvl5 LDFLAGS: -lsqisign_klpt_lvl5 -lsqisign_precomp_lvl5
-
-#cgo LDFLAGS: -lsqisign_quaternion_generic -lsqisign_common_sys
-#cgo LDFLAGS: -lsqisign_intbig_generic -lgmp
-
+#cgo LDFLAGS: -l:libsqisign_quaternion_generic.a
+#cgo LDFLAGS: -l:libsqisign_common_sys.a
+#cgo LDFLAGS: -l:libsqisign_intbig_generic.a
+#cgo LDFLAGS: -lgmp
 
 #include <stdio.h>
 #include <stdlib.h>
 
-
-#define SECURITY_LEVEL 3
-
 #if SECURITY_LEVEL == 1
-#include "src/nistapi/lvl1/api.h"
+#include "sqisign/lvl1/api.h"
 
 #elif SECURITY_LEVEL == 3
-#include "src/nistapi/lvl3/api.h"
+#include "sqisign/lvl3/api.h"
 
 #elif SECURITY_LEVEL == 5
-#include "src/nistapi/lvl5/api.h"
+#include "sqisign/lvl5/api.h"
 
 #endif
-
 
 // C function to print hex values
 static void print_hex(const unsigned char *hex, int len) {
