@@ -11,35 +11,15 @@ import (
 /*
 #cgo LDFLAGS: -L /usr/local/lib/sqisign
 
-#cgo lvl1 CFLAGS: -DSECURITY_LEVEL=1
-#cgo lvl1 LDFLAGS: -l:libsqisign_lvl1_nistapi.a
-#cgo lvl1 LDFLAGS: -l:libsqisign_lvl1.a
-#cgo lvl1 LDFLAGS: -l:libsqisign_protocols_lvl1.a
-#cgo lvl1 LDFLAGS: -l:libsqisign_gf_lvl1.a
-#cgo lvl1 LDFLAGS: -l:libsqisign_id2iso_lvl1.a
-#cgo lvl1 LDFLAGS: -l:libsqisign_ec_lvl1.a
-#cgo lvl1 LDFLAGS: -l:libsqisign_klpt_lvl1.a
-#cgo lvl1 LDFLAGS: -l:libsqisign_precomp_lvl1.a
-
-#cgo lvl3 CFLAGS: -DSECURITY_LEVEL=3
-#cgo lvl3 LDFLAGS: -l:libsqisign_lvl3_nistapi.a
-#cgo lvl3 LDFLAGS: -l:libsqisign_lvl3.a
-#cgo lvl3 LDFLAGS: -l:libsqisign_protocols_lvl3.a
-#cgo lvl3 LDFLAGS: -l:libsqisign_gf_lvl3.a
-#cgo lvl3 LDFLAGS: -l:libsqisign_id2iso_lvl3.a
-#cgo lvl3 LDFLAGS: -l:libsqisign_ec_lvl3.a
-#cgo lvl3 LDFLAGS: -l:libsqisign_klpt_lvl3.a
-#cgo lvl3 LDFLAGS: -l:libsqisign_precomp_lvl3.a
-
-#cgo lvl5 CFLAGS: -DSECURITY_LEVEL=5
-#cgo lvl5 LDFLAGS: -l:libsqisign_lvl5_nistapi.a
-#cgo lvl5 LDFLAGS: -l:libsqisign_lvl5.a
-#cgo lvl5 LDFLAGS: -l:libsqisign_protocols_lvl5.a
-#cgo lvl5 LDFLAGS: -l:libsqisign_gf_lvl5.a
-#cgo lvl5 LDFLAGS: -l:libsqisign_id2iso_lvl5.a
-#cgo lvl5 LDFLAGS: -l:libsqisign_ec_lvl5.a
-#cgo lvl5 LDFLAGS: -l:libsqisign_klpt_lvl5.a
-#cgo lvl5 LDFLAGS: -l:libsqisign_precomp_lvl5.a
+#cgo CFLAGS: -DSECURITY_LEVEL=1
+#cgo LDFLAGS: -l:libsqisign_lvl1_nistapi.a
+#cgo LDFLAGS: -l:libsqisign_lvl1.a
+#cgo LDFLAGS: -l:libsqisign_protocols_lvl1.a
+#cgo LDFLAGS: -l:libsqisign_gf_lvl1.a
+#cgo LDFLAGS: -l:libsqisign_id2iso_lvl1.a
+#cgo LDFLAGS: -l:libsqisign_ec_lvl1.a
+#cgo LDFLAGS: -l:libsqisign_klpt_lvl1.a
+#cgo LDFLAGS: -l:libsqisign_precomp_lvl1.a
 
 #cgo LDFLAGS: -l:libsqisign_quaternion_generic.a
 #cgo LDFLAGS: -l:libsqisign_common_sys.a
@@ -49,16 +29,7 @@ import (
 #include <stdio.h>
 #include <stdlib.h>
 
-#if SECURITY_LEVEL == 1
 #include "sqisign/lvl1/api.h"
-
-#elif SECURITY_LEVEL == 3
-#include "sqisign/lvl3/api.h"
-
-#elif SECURITY_LEVEL == 5
-#include "sqisign/lvl5/api.h"
-
-#endif
 
 // C function to print hex values
 static void print_hex(const unsigned char *hex, int len) {

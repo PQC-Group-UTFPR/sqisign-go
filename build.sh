@@ -31,14 +31,11 @@ function copy_to_lib() {
 }
 
 function copy_to_include() {
-    sudo mkdir -p /usr/local/include/sqisign
-    sudo mkdir -p /usr/local/include/sqisign/lvl{1,3,5}
+    sudo mkdir -p /usr/local/include/sqisign/lvl1
 
     basepath="./the-sqisign/src/nistapi"
     
     sudo cp -v "${basepath}/lvl1/api.h" "/usr/local/include/sqisign/lvl1/api.h"
-    sudo cp -v "${basepath}/lvl3/api.h" "/usr/local/include/sqisign/lvl3/api.h"
-    sudo cp -v "${basepath}/lvl5/api.h" "/usr/local/include/sqisign/lvl5/api.h"
 }
 
 compile_sqisign
