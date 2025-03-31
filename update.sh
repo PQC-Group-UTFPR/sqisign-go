@@ -14,8 +14,8 @@ function compile_sqisign() {
     cd ..; cd ..
 }
 
-function copy_to_lib() {
-    sudo mkdir -p /usr/local/lib/sqisign 
+function copy_libs() {
+    mkdir -p ./build
 
     basepath="./the-sqisign/build"
 
@@ -23,23 +23,19 @@ function copy_to_lib() {
         list_files=$(ls "${basepath}/${1}" | grep '\.a$\|\.so$')
 
         echo "${list_files}" | while IFS= read -r file; do
-            sudo cp -v "${basepath}/${1}/${file}" "/usr/local/lib/sqisign"
+            cp -v "${basepath}/${1}/${file}" "./build"
         done
 
         shift
     done
 }
 
-function copy_to_include() {
-    sudo mkdir -p /usr/local/include/sqisign/lvl1
-
-    basepath="./the-sqisign/src/nistapi"
-    
-    sudo cp -v "${basepath}/lvl1/api.h" "/usr/local/include/sqisign/lvl1/api.h"
+function copy_header() {
+    cp -v "./the-sqisign/src/nistapi/lvl1/api.h" "./sqisign-api.h"
 }
 
 compile_sqisign
-copy_to_lib "src" \
+copy_libs "src" \
     "src/protocols/ref/lvl1" \
     "src/gf/ref/lvl1" \
     "src/id2iso/ref/lvl1" \
@@ -49,4 +45,6 @@ copy_to_lib "src" \
     "src/intbig/ref/generic" \
     "src/common/generic" \
     "src/quaternion/ref/generic"
-copy_to_include
+copy_header
+
+rm -rf ./the-sqisign/
