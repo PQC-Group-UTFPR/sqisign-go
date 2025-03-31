@@ -8,19 +8,12 @@ First, clone the `sqisign-go` repository:
 
 ```bash
 $ git clone git@github.com:PQC-Group-UTFPR/sqisign-go.git
-$ cd sqisign-go
 ```
 
-Build the external library:
+## Example
 
 ```bash
-$ ./build.sh
-```
-
-### Examples
-
-```bash
-$ cd src/main
-$ go build -tags lvl<1/3/5>
-$ ./main
+$ cd example
+$ go mod init main && go mod tidy
+$ go run .
 ```

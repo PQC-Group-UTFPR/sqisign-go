@@ -10,6 +10,7 @@ import (
 
 /*
 #cgo LDFLAGS: -L /usr/local/lib/sqisign
+#cgo LDFLAGS: -L ${SRCDIR}/build
 
 #cgo CFLAGS: -DSECURITY_LEVEL=1
 #cgo LDFLAGS: -l:libsqisign_lvl1_nistapi.a
@@ -29,7 +30,7 @@ import (
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "sqisign/lvl1/api.h"
+#include "sqisign-api.h"
 
 // C function to print hex values
 static void print_hex(const unsigned char *hex, int len) {

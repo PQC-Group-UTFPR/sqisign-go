@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/hex"
-	"sqisign-go/sqisign"
+	"github.com/alexandreboutrik/sqisign-go"
 	"unsafe"
 )
 
