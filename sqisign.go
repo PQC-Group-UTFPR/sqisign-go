@@ -76,6 +76,22 @@ type PrivateKey struct {
 var public_key *PublicKey
 var private_key *PrivateKey
 
+func (pub *PublicKey) Bytes() []byte {
+	if pub.CPublicKey == nil {
+		return nil
+	}
+
+	return C.GoBytes(unsafe.Pointer(pub.CPublicKey), C.int(CRYPTO_PUBLICKEYBYTES))
+}
+
+func (priv *PrivateKey) Bytes() []byte {
+	if priv.CSecretKey == nil {
+		return nil
+	}
+
+	return C.GoBytes(unsafe.Pointer(priv.CSecretKey), C.int(CRYPTO_SECRETKEYBYTES))
+}
+
 func GenerateKey() (pk *PublicKey, sk *PrivateKey, err error) {
 	pk_c := (*C.uchar)(unsafe.Pointer(C.CString(strings.Repeat("0", CRYPTO_PUBLICKEYBYTES))))
 	sk_c := (*C.uchar)(unsafe.Pointer(C.CString(strings.Repeat("0", CRYPTO_SECRETKEYBYTES))))
