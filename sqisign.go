@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"fmt"
 	"io"
+	"runtime"
 	"strings"
 	"unsafe"
 )
@@ -76,6 +77,23 @@ type PrivateKey struct {
 var public_key *PublicKey
 var private_key *PrivateKey
 
+func PublicKeyFromBytes(data []byte) (*PublicKey, error) {
+	if len(data) != CRYPTO_PUBLICKEYBYTES {
+		return nil, fmt.Errorf("sqisign: invalid public key size")
+	}
+
+	cPubKeyPtr := C.CBytes(data)
+	if cPubKeyPtr == nil {
+		return nil, fmt.Errorf("sqisign: failed to allocate memory")
+	}
+
+	publicKey := &PublicKey{CPublicKey: (*C.uchar)(cPubKeyPtr)}
+
+	runtime.SetFinalizer(publicKey, func(pk *PublicKey) {
+		C.free(unsafe.Pointer(pk.CPublicKey))
+	})
+}
+
 func (pub *PublicKey) Bytes() []byte {
 	if pub.CPublicKey == nil {
 		return nil
@@ -99,7 +117,7 @@ func GenerateKey() (pk *PublicKey, sk *PrivateKey, err error) {
 	public_key = &PublicKey{CPublicKey: pk_c}
 	private_key = &PrivateKey{CSecretKey: sk_c}
 	if err = nil; ok != 0 {
-		err = fmt.Errorf("error during key generation process")
+		err = fmt.Errorf("sqisign: error during key generation process")
 	}
 	return public_key, private_key, err
 }
@@ -119,7 +137,7 @@ func (priv *PrivateKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOp
 		(*C.uchar)(unsafe.Pointer(m)), (C.ulonglong)(mlen), priv.CSecretKey)
 	signature = C.GoBytes((unsafe.Pointer(sm)), (C.int)(CRYPTO_BYTES+mlen))
 	if err = nil; ok != 0 {
-		err = fmt.Errorf("error during signing process")
+		err = fmt.Errorf("sqisign: error during signing process")
 	}
 	return
 }
@@ -134,7 +152,7 @@ func (pub *PublicKey) Verify(mlen int, signature []byte) (msg []byte, err error)
 		(*C.uchar)(unsafe.Pointer(sm)), (C.ulonglong)(smlen), pub.CPublicKey)
 	msg = []byte(C.GoString(m))
 	if err = nil; ok != 0 {
-		err = fmt.Errorf("error during verification process")
+		err = fmt.Errorf("sqisign: error during verification process")
 	}
 	return
 }
