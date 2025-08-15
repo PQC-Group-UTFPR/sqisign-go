@@ -92,6 +92,8 @@ func PublicKeyFromBytes(data []byte) (*PublicKey, error) {
 	runtime.SetFinalizer(publicKey, func(pk *PublicKey) {
 		C.free(unsafe.Pointer(pk.CPublicKey))
 	})
+
+	return publicKey, nil
 }
 
 func (pub *PublicKey) Bytes() []byte {
