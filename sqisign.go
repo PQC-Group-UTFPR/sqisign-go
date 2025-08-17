@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"runtime"
-	"strings"
 	"unsafe"
 )
 
@@ -67,15 +66,13 @@ func CryptoSignOpen(m *C.uchar, mlen *C.ulonglong, sm *C.uchar,
 }
 
 type PublicKey struct {
-	CPublicKey *C.uchar
+	cPublicKey *C.uchar
 }
 
 type PrivateKey struct {
-	CSecretKey *C.uchar
+	cSecretKey *C.uchar
+	publicKey *PublicKey
 }
-
-var public_key *PublicKey
-var private_key *PrivateKey
 
 func PublicKeyFromBytes(data []byte) (*PublicKey, error) {
 	if len(data) != CRYPTO_PUBLICKEYBYTES {
@@ -87,78 +84,124 @@ func PublicKeyFromBytes(data []byte) (*PublicKey, error) {
 		return nil, fmt.Errorf("sqisign: failed to allocate memory")
 	}
 
-	publicKey := &PublicKey{CPublicKey: (*C.uchar)(cPubKeyPtr)}
+	publicKey := &PublicKey{cPublicKey: (*C.uchar)(cPubKeyPtr)}
 
-	runtime.SetFinalizer(publicKey, func(pk *PublicKey) {
-		C.free(unsafe.Pointer(pk.CPublicKey))
+	runtime.SetFinalizer(publicKey, func(p *PublicKey) {
+		C.free(unsafe.Pointer(p.cPublicKey))
 	})
 
 	return publicKey, nil
 }
 
+func PrivateKeyFromBytes(data []byte) (*PrivateKey, error) {
+	if len(data) != CRYPTO_SECRETKEYBYTES {
+		return nil, fmt.Errorf("sqisign: invalid private key size")
+	}
+
+	cSecKeyPtr := C.CBytes(data)
+	if cSecKeyPtr == nil {
+		return nil, fmt.Errorf("sqisign: failed to allocate memory")
+	}
+
+	priv := &PrivateKey{cSecretKey: (*C.uchar)(cSecKeyPtr)}
+
+	runtime.SetFinalizer(priv, func(p *PrivateKey) {
+		C.free(unsafe.Pointer(p.cSecretKey))
+	})
+
+	return priv, nil
+}
+
 func (pub *PublicKey) Bytes() []byte {
-	if pub.CPublicKey == nil {
+	if pub.cPublicKey == nil {
 		return nil
 	}
 
-	return C.GoBytes(unsafe.Pointer(pub.CPublicKey), C.int(CRYPTO_PUBLICKEYBYTES))
+	return C.GoBytes(unsafe.Pointer(pub.cPublicKey), C.int(CRYPTO_PUBLICKEYBYTES))
 }
 
 func (priv *PrivateKey) Bytes() []byte {
-	if priv.CSecretKey == nil {
+	if priv.cSecretKey == nil {
 		return nil
 	}
 
-	return C.GoBytes(unsafe.Pointer(priv.CSecretKey), C.int(CRYPTO_SECRETKEYBYTES))
+	return C.GoBytes(unsafe.Pointer(priv.cSecretKey), C.int(CRYPTO_SECRETKEYBYTES))
 }
 
 func GenerateKey() (pk *PublicKey, sk *PrivateKey, err error) {
-	pk_c := (*C.uchar)(unsafe.Pointer(C.CString(strings.Repeat("0", CRYPTO_PUBLICKEYBYTES))))
-	sk_c := (*C.uchar)(unsafe.Pointer(C.CString(strings.Repeat("0", CRYPTO_SECRETKEYBYTES))))
-	ok := CryptoSignKeyPair(pk_c, sk_c)
-	public_key = &PublicKey{CPublicKey: pk_c}
-	private_key = &PrivateKey{CSecretKey: sk_c}
-	if err = nil; ok != 0 {
-		err = fmt.Errorf("sqisign: error during key generation process")
+	pkc := (*C.uchar)(C.malloc(C.size_t(CRYPTO_PUBLICKEYBYTES)))
+	skc := (*C.uchar)(C.malloc(C.size_t(CRYPTO_SECRETKEYBYTES)))
+
+	if pkc == nil || skc == nil {
+		C.free(unsafe.Pointer(pkc))
+		return nil, nil, fmt.Errorf("sqisign: failed to allocate memory")
 	}
-	return public_key, private_key, err
+
+	if CryptoSignKeyPair(pkc, skc) != 0 {
+		C.free(unsafe.Pointer(pkc))
+		C.free(unsafe.Pointer(skc))
+		return nil, nil, fmt.Errorf("sqisign: CryptoSignKeyPair failed")
+	}
+
+	pub := &PublicKey{cPublicKey: pkc}
+	priv := &PrivateKey{cSecretKey: skc, publicKey: pub}
+
+	runtime.SetFinalizer(pub, func(p *PublicKey) {
+		C.free(unsafe.Pointer(p.cPublicKey))
+	})
+	runtime.SetFinalizer(priv, func(p *PrivateKey) {
+		C.free(unsafe.Pointer(p.cSecretKey))
+	})
+
+	return pub, priv, err
 }
 
-func (priv *PrivateKey) Public() PublicKey {
-	return *public_key
+func (priv *PrivateKey) Public() crypto.PublicKey {
+	return priv.publicKey
 }
 
 func (priv *PrivateKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) (signature []byte, err error) {
-	m := C.CString(string(digest[:]))
-	defer C.free(unsafe.Pointer(m))
 	mlen := len(digest)
-	sm := C.CString(strings.Repeat("0", CRYPTO_BYTES+mlen))
-	defer C.free(unsafe.Pointer(sm))
-	smlen := CRYPTO_BYTES + mlen
-	ok := CryptoSign((*C.uchar)(unsafe.Pointer(sm)), (*C.ulonglong)(unsafe.Pointer(&smlen)),
-		(*C.uchar)(unsafe.Pointer(m)), (C.ulonglong)(mlen), priv.CSecretKey)
-	signature = C.GoBytes((unsafe.Pointer(sm)), (C.int)(CRYPTO_BYTES+mlen))
-	if err = nil; ok != 0 {
-		err = fmt.Errorf("sqisign: error during signing process")
+	smlen_c := C.ulonglong(mlen + CRYPTO_BYTES)
+
+	m_c := C.CBytes(digest)
+	defer C.free(m_c)
+
+	sm_c := C.malloc(C.size_t(smlen_c))
+	if sm_c == nil {
+		return nil, fmt.Errorf("sqisign: failed to allocate memory")
 	}
-	return
+	defer C.free(sm_c)
+
+	if CryptoSign((*C.uchar)(sm_c), &smlen_c, (*C.uchar)(m_c), C.ulonglong(mlen), priv.cSecretKey) != 0 {
+		return nil, fmt.Errorf("sqisign: error during signing process")
+	}
+
+	return C.GoBytes(sm_c, C.int(smlen_c)), nil
 }
 
-func (pub *PublicKey) Verify(mlen int, signature []byte) (msg []byte, err error) {
-	m := C.CString(strings.Repeat("0", mlen))
-	defer C.free(unsafe.Pointer(m))
+func (pub *PublicKey) Verify(digest, signature []byte) error {
 	smlen := len(signature)
-	sm := C.CString(string(signature))
-	defer C.free(unsafe.Pointer(sm))
-	ok := CryptoSignOpen((*C.uchar)(unsafe.Pointer(m)), (*C.ulonglong)(unsafe.Pointer(&mlen)),
-		(*C.uchar)(unsafe.Pointer(sm)), (C.ulonglong)(smlen), pub.CPublicKey)
-	msg = []byte(C.GoString(m))
-	if err = nil; ok != 0 {
-		err = fmt.Errorf("sqisign: error during verification process")
+
+	m := C.malloc(C.size_t(len(digest)))
+	if m == nil {
+		return fmt.Errorf("sqisign: failed to allocate memory")
 	}
-	return
+	defer C.free(m)
+
+	sm := C.CBytes(signature)
+	defer C.free(sm)
+
+	var mlen C.ulonglong
+	if CryptoSignOpen((*C.uchar)(m), &mlen, (*C.uchar)(sm), C.ulonglong(smlen), pub.cPublicKey) != 0 {
+		return fmt.Errorf("sqisign: signature verification failed")
+	}
+
+	return nil
 }
 
-func PrintHex(hex *C.uchar, len C.int) {
-	C.print_hex(hex, len)
+func PrintHex(data []byte) {
+	cData := C.CBytes(data)
+	defer C.free(cData)
+	C.print_hex((*C.uchar)(cData), C.int(len(data)))
 }
