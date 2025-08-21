@@ -103,7 +103,7 @@ func PrivateKeyFromBytes(data []byte) (*PrivateKey, error) {
 		return nil, fmt.Errorf("sqisign: failed to allocate memory")
 	}
 
-	priv := &PrivateKey{cSecretKey: (*C.uchar)(cSecKeyPtr)}
+	priv := &PrivateKey{cSecretKey: (*C.uchar)(cSecKeyPtr), publicKey: nil}
 
 	runtime.SetFinalizer(priv, func(p *PrivateKey) {
 		C.free(unsafe.Pointer(p.cSecretKey))
