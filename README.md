@@ -62,6 +62,9 @@ The `sqisign-go` binding provides functions for key management and cryptographic
 - func (priv \*PrivateKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) (signature []byte, error)
 - func (pub \*PublicKey) Verify(digest, signature []byte) error
 
+> [!WARNING]
+> The `PrivateKeyFromBytes()` function deserializes a private key but **DOES NOT** reconstruct its corresponding public key. As result, in this case, calling `priv.Public()` will return nil.
+
 ## Running the tests
 
 ```bash
