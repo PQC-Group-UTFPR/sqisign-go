@@ -1,6 +1,7 @@
 package sqisign
 
 import (
+	"bytes"
 	"crypto"
 	"fmt"
 	"io"
@@ -195,6 +196,11 @@ func (pub *PublicKey) Verify(digest, signature []byte) error {
 	var mlen C.ulonglong
 	if CryptoSignOpen((*C.uchar)(m), &mlen, (*C.uchar)(sm), C.ulonglong(smlen), pub.cPublicKey) != 0 {
 		return fmt.Errorf("sqisign: signature verification failed")
+	}
+
+	mGo := C.GoBytes(m, C.int(mlen))
+	if !bytes.Equal(mGo, digest) {
+		return fmt.Errorf("sqisign: message does not match digest")
 	}
 
 	return nil
