@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestKeyGeneration(t *testing.T) {
+func Test_Key_Generation(t *testing.T) {
 	pub, priv, err := GenerateKey()
 	if err != nil {
 		t.Fatalf("GenerateKey() failed: %v", err)
@@ -23,7 +23,7 @@ func TestKeyGeneration(t *testing.T) {
 	}
 }
 
-func TestValidSignature(t *testing.T) {
+func Test_Valid_Signature(t *testing.T) {
 	pub, priv, err := GenerateKey()
 	if err != nil {
 		t.Fatalf("GenerateKey() failed: %v", err)
@@ -46,7 +46,7 @@ func TestValidSignature(t *testing.T) {
 	}
 }
 
-func TestInvalidSignature(t *testing.T) {
+func Test_Invalid_Signature(t *testing.T) {
 	pub, priv, err := GenerateKey()
 	if err != nil {
 		t.Fatalf("GenerateKey() failed: %v", err)
@@ -71,7 +71,7 @@ func TestInvalidSignature(t *testing.T) {
 	}
 }
 
-func TestKeySerialization(t *testing.T) {
+func Test_Key_Serialization(t *testing.T) {
 	pubOrig, privOrig, err := GenerateKey()
 	if err != nil {
 		t.Fatalf("GenerateKey() failed: %v", err)
@@ -97,4 +97,28 @@ func TestKeySerialization(t *testing.T) {
 	if !bytes.Equal(privOrig.Bytes(), privNew.Bytes()) {
 		t.Fatalf("deserialized private key does not match the original")
 	}
+}
+
+func Test_Verify_With_Wrong_Digest(t *testing.T) {
+	pub, priv, err := GenerateKey()
+	if err != nil {
+		t.Fatalf("GenerateKey() failed: %v", err)
+	}
+
+	originalMessage := []byte("this is a test message")
+	wrongDigest := []byte("this is a differen message")
+
+	signature, err := priv.Sign(nil, originalMessage, nil)
+	if err != nil {
+		t.Fatalf("Sign() failed: %v", err)
+	}
+	if len(signature) == 0 {
+		t.Fatalf("Sign() returned an empty signature")
+	}
+
+	err = pub.Verify(wrongDigest, signature)
+	if err == nil {
+		t.Fatalf("Verify() succeeded for a valid signature but wrong digest")
+	}
+
 }
