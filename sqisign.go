@@ -183,8 +183,12 @@ func (priv *PrivateKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOp
 
 func (pub *PublicKey) Verify(digest, signature []byte) error {
 	smlen := len(signature)
+	if smlen < CRYPTO_BYTES {
+		return fmt.Errorf("sqisign: invalid signature size")
+	}
 
-	m := C.malloc(C.size_t(len(digest)))
+	ex_mlen := smlen - CRYPTO_BYTES
+	m := C.malloc(C.size_t(ex_mlen))
 	if m == nil {
 		return fmt.Errorf("sqisign: failed to allocate memory")
 	}
